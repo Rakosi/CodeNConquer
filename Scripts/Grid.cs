@@ -24,8 +24,8 @@ public class Grid : MonoBehaviour {
 
 	void Awake()
 	{
-		tileRadius = 2f;
-		gridWorldSize = new Vector2 (354, 198);
+		tileRadius = 3f;
+		gridWorldSize = new Vector2 (356, 200);
 		tileDiameter = tileRadius * 2;
 		gridSizeX = Mathf.RoundToInt(gridWorldSize.x / tileDiameter);
 		gridSizeY = Mathf.RoundToInt(gridWorldSize.y / tileDiameter);
@@ -41,16 +41,19 @@ public class Grid : MonoBehaviour {
 				Vector2 worldPoint = worldBottomLeft + Vector2.right * (x * tileDiameter + tileRadius) + Vector2.up * (y * tileDiameter + tileRadius);
 				//Physics part is used to check for colliders in the already position, useful for placement of buildings and pathfinding
 				bool isObstacle;
-				RaycastHit obstacle;
-				Ray check = new Ray(worldPoint,Vector3.back);
+				//RaycastHit obstacle;
+				//Ray check = new Ray(worldPoint,Vector3.back);
 				var layer = LayerMask.NameToLayer("obstacle");
 				layer = 1 << layer;
-				if(Physics.Raycast (check,out obstacle,10,layer))
-				{
-					isObstacle = true;
-				}
-				else
-					isObstacle = false;
+//				if(Physics.Raycast (check,out obstacle,10,layer))
+//				{
+//					isObstacle = true;
+//				}
+//				else
+//					isObstacle = false;
+//				
+				isObstacle = Physics2D.OverlapArea (new Vector2(worldPoint.x - tileRadius,worldPoint.y + tileRadius),
+				                                    new Vector2(worldPoint.x + tileRadius,worldPoint.y - tileRadius), layer);
 				
 				grid[x,y] = new Tile(isObstacle,worldPoint);
 				if(isObstacle)
@@ -82,42 +85,36 @@ public class Grid : MonoBehaviour {
 	{
 		foreach (Tile t in grid) {
 
-			RaycastHit obstacle;
-			Ray check = new Ray(t.WorldPosition,Vector3.back);
+			//RaycastHit obstacle;
+			//Ray check = new Ray(t.WorldPosition,Vector3.back);
 			var layer = LayerMask.NameToLayer("obstacle");
 			layer = 1 << layer;
-			if(Physics.Raycast (check,out obstacle,10,layer))
-			{
-				t.IsObstacle = true;
-			}
-			else
-				t.IsObstacle = false;
 
+//			if(Physics.Raycast (check,out obstacle,10,layer))
+//			{
+//				t.IsObstacle = true;
+//			}
+//			else
+//				t.IsObstacle = false;
+
+			t.IsObstacle = Physics2D.OverlapArea (new Vector2(t.WorldPosition.x - tileRadius,t.WorldPosition.y + tileRadius),
+			                                      new Vector2(t.WorldPosition.x + tileRadius,t.WorldPosition.y - tileRadius), layer);
+			
 			//if(t.IsObstacle)
-				//Debug.Log(t.WorldPosition);
+			//	Debug.Log(t.WorldPosition);
 		}
 	}
 
-	public bool CheckTile (Vector3 pos,int tileOccupied)
+	public bool CheckTile (Vector3 pos)
 	{
 		Vector2 pos2 = ConvertLocation(pos);
 		int x = Mathf.RoundToInt (pos2.x);
 		int y = Mathf.RoundToInt (pos2.y);
-		//Debug.Log (x + " - " + y + " - " + pos);
-		switch (tileOccupied) {
-		case 1:
-			return grid[x,y].IsObstacle;
-		case 2:
-			return grid[x,y].IsObstacle || grid[x-1,y-1].IsObstacle 
-				|| grid[x+1,y].IsObstacle || grid[x+1,y-1].IsObstacle;
-		case 3:
-			Debug.Log(x + "  " + y);
-			return grid[x,y].IsObstacle || grid[x-2,y-1].IsObstacle || grid[x-1,y-2].IsObstacle
-					|| grid[x-2,y-2].IsObstacle || grid[x,y-1].IsObstacle || grid[x-2,y].IsObstacle
-					|| grid[x-1,y].IsObstacle || grid[x,y].IsObstacle || grid[x,y-2].IsObstacle;
-		default:
-			return true;
-		}
+
+		return grid[x,y].IsObstacle || grid[x-2,y-1].IsObstacle || grid[x-1,y-2].IsObstacle
+				|| grid[x-2,y-2].IsObstacle || grid[x,y-1].IsObstacle || grid[x-2,y].IsObstacle
+				|| grid[x-1,y].IsObstacle || grid[x,y].IsObstacle || grid[x,y-2].IsObstacle;
+
 	}
 
 //	Gizmos debugging part

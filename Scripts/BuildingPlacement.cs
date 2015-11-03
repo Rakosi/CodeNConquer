@@ -6,18 +6,17 @@ public class BuildingPlacement : MonoBehaviour {
 	//This is the building to be constructed on grid system
 	//Using polymorphism for easier management
 	private Building buildingConstructed;
-	private int tileOccupied;
-	Material invalidLoc;
-	Material template;
-	Material original;
-	MeshRenderer originalRender;
+	Sprite invalidLoc;
+	Sprite template;
+	Sprite original;
+	SpriteRenderer originalRender;
 	Grid grid; 
 
 	// When the script is loaded there is no building to be created so it is set to null
 	void Awake () {
-		template = Resources.Load ("Transparent",typeof(Material)) as Material;
-		invalidLoc = Resources.Load ("Invalid",typeof(Material)) as Material;
-		original = Resources.Load ("Normal",typeof(Material)) as Material;
+//		template = Resources.Load ("Transparent",typeof(Material)) as Material;
+//		invalidLoc = Resources.Load ("Invalid",typeof(Material)) as Material;
+//		original = Resources.Load ("Normal",typeof(Material)) as Material;
 		grid = GetComponentInParent<Grid>();
 		buildingConstructed = null;
 	}
@@ -48,27 +47,30 @@ public class BuildingPlacement : MonoBehaviour {
 
 			//Show the transparent sprite only when the tiles below are avaliable
 			//In other cases, don't show the building template
-			if(!grid.CheckTile(pos,tileOccupied))
+			if(!grid.CheckTile(pos))
 			{
-				originalRender.material = template;
+				originalRender.color = Color.gray;
 				//User places on a place (avaliable or not)
 				buildingConstructed.transform.position = 
 					new Vector2(((grid.ConvertLocation(pos).x - 1)*grid.tileDiameter + grid.tileRadius),
 					            ((grid.ConvertLocation(pos).y - 1)*grid.tileDiameter + grid.tileRadius));
-				buildingConstructed.transform.position = buildingConstructed.transform.position + Vector3.back * 5f;
 				if(Input.GetMouseButtonDown(0))
 				{
 					//Place the building
-					originalRender.material = original;
+					originalRender.color = Color.white;
 					//Convert the position of the building to the nearest avaliable grid tile
 					buildingConstructed.gameObject.layer = LayerMask.NameToLayer( "obstacle" );
 					buildingConstructed.location = buildingConstructed.transform.position;
+					buildingConstructed.gameObject.GetComponent<BoxCollider2D>().enabled = true;
 					buildingConstructed = null;
 				}
 
 			}
 			else{
-				originalRender.material = invalidLoc;
+				originalRender.color = Color.red;
+				buildingConstructed.transform.position = 
+					new Vector2(((grid.ConvertLocation(pos).x - 1)*grid.tileDiameter + grid.tileRadius),
+					            ((grid.ConvertLocation(pos).y - 1)*grid.tileDiameter + grid.tileRadius));
 			}
 
 			//buildingConstructed.location = pos;
@@ -88,21 +90,45 @@ public class BuildingPlacement : MonoBehaviour {
 	{
 		switch (buildingName) {
 		case "Barracks":
-				tileOccupied = 3;
-				buildingConstructed = ((Barracks)Instantiate (g, transform.position,transform.rotation));
-				//Put the transparent template by changing the material
-				originalRender = buildingConstructed.GetComponent<MeshRenderer>();
-				originalRender.material = template;
-				original = Resources.Load ("Barracks",typeof(Material)) as Material;
 
-				//Change the layer mask to default as it is not a obstacle yet!
-				buildingConstructed.gameObject.layer = 0;
-				break;
+				buildingConstructed = ((Barracks)Instantiate (g, transform.position,transform.rotation));
+			break;
+		case "Question":
+
+				buildingConstructed = ((QuestionBuilding)Instantiate (g, transform.position,transform.rotation));
+			break;
+		case "Archery":
+
+			buildingConstructed = ((Archery)Instantiate (g, transform.position,transform.rotation));
+			break;
+		case "Research":
+
+			buildingConstructed = ((ResearchBuilding)Instantiate (g, transform.position,transform.rotation));
+			break;
+		case "Tower":
+
+			buildingConstructed = ((Tower)Instantiate (g, transform.position,transform.rotation));
+			break;
 		default:
 			break;
+
 		}
 
+		//We need to assign the transparent sprite which will be displayed as during the construction process
+		//together with the original sprite and invalid sprite
+		original = Resources.Load (buildingName,typeof(Sprite)) as Sprite;
 
+		//Put the transparent template by changing the material
+		originalRender = buildingConstructed.GetComponent<SpriteRenderer>();
+		originalRender.sprite = original;
+		originalRender.color = Color.gray;
 
+		//Disable collider to have full transparent construction
+		buildingConstructed.gameObject.GetComponent<BoxCollider2D>().enabled = false;
+		//Change the layer mask to default as it is not a obstacle yet!
+		buildingConstructed.gameObject.layer = 0;
+		
+		
+		
 	}
 }

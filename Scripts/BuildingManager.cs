@@ -26,7 +26,7 @@ public class BuildingManager : MonoBehaviour {
 		//Create a button for each type of building that can be placed
 		for (int index = 0; index < buildingsTypes.Length; index++) {
 			if(GUI.Button (new Rect(grid.GridWorldSize.x-25,
-			                        grid.GridWorldSize.y + (-1 * index * 35),100,40),buildingsTypes[index].name))
+			                        grid.GridWorldSize.y + (-1 * index * 40),100,40),buildingsTypes[index].name))
 			{
 				if(buildingPlacement != null)
 					buildingPlacement.CreateBuilding(buildingsTypes[index],buildingsTypes[index].name);
