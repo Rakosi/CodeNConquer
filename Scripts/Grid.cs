@@ -16,44 +16,51 @@ public class Grid : MonoBehaviour {
 		}
 	}
 
-	public float tileRadius;
+	private float tileRadius;
 	Tile[,] grid;
 
-	public float tileDiameter;
+	private float tileDiameter;
 	int gridSizeX,gridSizeY;
 
 	void Awake()
 	{
-		tileRadius = 3f;
-		gridWorldSize = new Vector2 (356, 200);
+		tileRadius = 6f;
+		gridWorldSize = new Vector2 (480, 270);
 		tileDiameter = tileRadius * 2;
 		gridSizeX = Mathf.RoundToInt(gridWorldSize.x / tileDiameter);
 		gridSizeY = Mathf.RoundToInt(gridWorldSize.y / tileDiameter);
 		InstantiateGrid ();
 	}
 
+
+	public float getTileRadius()
+	{
+		return tileRadius;
+	}
+
 	void InstantiateGrid()
 	{
 		grid = new Tile[gridSizeX, gridSizeY];
-		Vector2 worldBottomLeft = new Vector2(0,0);
+		Vector2 worldCorner = new Vector2 (0, 0);
 		for (int x = 0;x < gridSizeX;x++){
 			for (int y = 0;y < gridSizeY;y++){
-				Vector2 worldPoint = worldBottomLeft + Vector2.right * (x * tileDiameter + tileRadius) + Vector2.up * (y * tileDiameter + tileRadius);
+				Vector2 worldPoint =  worldCorner + Vector2.right * (x * tileDiameter + tileRadius) + Vector2.up * (y * tileDiameter + tileRadius);
 				//Physics part is used to check for colliders in the already position, useful for placement of buildings and pathfinding
-				bool isObstacle;
 				//RaycastHit obstacle;
 				//Ray check = new Ray(worldPoint,Vector3.back);
-				var layer = LayerMask.NameToLayer("obstacle");
-				layer = 1 << layer;
 //				if(Physics.Raycast (check,out obstacle,10,layer))
 //				{
 //					isObstacle = true;
 //				}
 //				else
 //					isObstacle = false;
-//				
-				isObstacle = Physics2D.OverlapArea (new Vector2(worldPoint.x - tileRadius,worldPoint.y + tileRadius),
-				                                    new Vector2(worldPoint.x + tileRadius,worldPoint.y - tileRadius), layer);
+				//Check if there are any obstacles on the tile currently
+				//Update: I have added a very small amount of distance to shrink the area to be checked, as
+				//it can falsely think there is an obstacle on it while actually its neighbour has it.
+				//Area leaks to neighbour tiles.
+				bool isObstacle = Physics2D.OverlapArea (new Vector2(worldPoint.x - tileRadius + 0.01f,worldPoint.y + tileRadius - 0.01f),
+				                                         new Vector2(worldPoint.x + tileRadius - 0.01f,worldPoint.y - tileRadius + 0.01f),
+				                                    1 << LayerMask.NameToLayer("obstacle"));
 				
 				grid[x,y] = new Tile(isObstacle,worldPoint);
 				if(isObstacle)
@@ -67,16 +74,12 @@ public class Grid : MonoBehaviour {
 	//Useful and be used for positioning for further game objects
 	public Vector2 ConvertLocation(Vector2 worldPosition)
 	{
-		float percentX = (worldPosition.x + tileDiameter) / gridWorldSize.x;
-		float percentY = (worldPosition.y + tileDiameter) / gridWorldSize.y;
-
-		//Checks if the character in the world edges
-		percentX = Mathf.Clamp01 (percentX);
-		percentY = Mathf.Clamp01 (percentY);
+		float percentX = (worldPosition.x + tileRadius) / gridWorldSize.x;
+		float percentY = (worldPosition.y + tileRadius) / gridWorldSize.y;
 
 		int x = Mathf.RoundToInt((gridSizeX) * percentX);
 		int y = Mathf.RoundToInt((gridSizeY) * percentY);
-		return new Vector2 (x, y);
+		return new Vector2 (x-1, y-1);
 	}
 
 	//Constantly updates the whole grid each frame so building construction A* works as accurate as possible
@@ -84,39 +87,48 @@ public class Grid : MonoBehaviour {
 	void FixedUpdate()
 	{
 		foreach (Tile t in grid) {
-
-			//RaycastHit obstacle;
-			//Ray check = new Ray(t.WorldPosition,Vector3.back);
-			var layer = LayerMask.NameToLayer("obstacle");
-			layer = 1 << layer;
-
-//			if(Physics.Raycast (check,out obstacle,10,layer))
-//			{
-//				t.IsObstacle = true;
-//			}
-//			else
-//				t.IsObstacle = false;
-
-			t.IsObstacle = Physics2D.OverlapArea (new Vector2(t.WorldPosition.x - tileRadius,t.WorldPosition.y + tileRadius),
-			                                      new Vector2(t.WorldPosition.x + tileRadius,t.WorldPosition.y - tileRadius), layer);
-			
-			//if(t.IsObstacle)
-			//	Debug.Log(t.WorldPosition);
+		
+			//Check if there are any obstacles on the tile currently
+			//Update: I have added a very small amount of distance to shrink the area to be checked, as
+			//it can falsely think there is an obstacle on it while actually its neighbour has it.
+			//Area leaks to neighbour tiles.
+			t.IsObstacle = Physics2D.OverlapArea (new Vector2(t.WorldPosition.x - tileRadius + 0.01f,t.WorldPosition.y + tileRadius - 0.01f),
+			                                      new Vector2(t.WorldPosition.x + tileRadius - 0.01f,t.WorldPosition.y - tileRadius + 0.01f),
+			                                      1 << LayerMask.NameToLayer("obstacle"));
+		//	if(t.IsObstacle)
+		//		Debug.Log(t.WorldPosition);
 		}
 	}
 
-	public bool CheckTile (Vector3 pos)
+	//Checks all the close tiles if they are occupied, buildings take 5x5 even if they are 3x3
+	//as we should leave room for soldier creation
+	public bool CheckTile (Vector2 pos)
 	{
 		Vector2 pos2 = ConvertLocation(pos);
 		int x = Mathf.RoundToInt (pos2.x);
 		int y = Mathf.RoundToInt (pos2.y);
+		
+		//Debug.Log(x + " " + y);
+		if (x < 2 || x > gridSizeX - 3 || y < 2 || y > gridSizeY - 3)
+			return true;
+		else {
+			for(int r = x - 2;r <= x + 2;r++){
+				for(int c = y - 2;c <= y + 2;c++)
+				{
+					if(grid[r,c].IsObstacle)
+						return true;
+				}
+			}
+		}
 
-		return grid[x,y].IsObstacle || grid[x-2,y-1].IsObstacle || grid[x-1,y-2].IsObstacle
-				|| grid[x-2,y-2].IsObstacle || grid[x,y-1].IsObstacle || grid[x-2,y].IsObstacle
-				|| grid[x-1,y].IsObstacle || grid[x,y].IsObstacle || grid[x,y-2].IsObstacle;
+		return false;
 
 	}
 
+	public bool checkSingleTile(int x,int y)
+	{
+		return grid[x,y].IsObstacle;
+	}
 //	Gizmos debugging part
 //	void OnDrawGizmos()
 //	{

@@ -14,9 +14,6 @@ public class BuildingPlacement : MonoBehaviour {
 
 	// When the script is loaded there is no building to be created so it is set to null
 	void Awake () {
-//		template = Resources.Load ("Transparent",typeof(Material)) as Material;
-//		invalidLoc = Resources.Load ("Invalid",typeof(Material)) as Material;
-//		original = Resources.Load ("Normal",typeof(Material)) as Material;
 		grid = GetComponentInParent<Grid>();
 		buildingConstructed = null;
 	}
@@ -52,15 +49,21 @@ public class BuildingPlacement : MonoBehaviour {
 				originalRender.color = Color.gray;
 				//User places on a place (avaliable or not)
 				buildingConstructed.transform.position = 
-					new Vector2(((grid.ConvertLocation(pos).x - 1)*grid.tileDiameter + grid.tileRadius),
-					            ((grid.ConvertLocation(pos).y - 1)*grid.tileDiameter + grid.tileRadius));
+					new Vector2(((grid.ConvertLocation(pos).x)*grid.getTileRadius() * 2+ grid.getTileRadius()),
+					            ((grid.ConvertLocation(pos).y)*grid.getTileRadius() * 2+ grid.getTileRadius()));
 				if(Input.GetMouseButtonDown(0))
 				{
 					//Place the building
 					originalRender.color = Color.white;
 					//Convert the position of the building to the nearest avaliable grid tile
 					buildingConstructed.gameObject.layer = LayerMask.NameToLayer( "obstacle" );
-					buildingConstructed.location = buildingConstructed.transform.position;
+
+					//Put the grid indexof created buildings center
+					buildingConstructed.X = (int)grid.ConvertLocation(buildingConstructed.transform.position).x;
+					buildingConstructed.Y = (int)grid.ConvertLocation(buildingConstructed.transform.position).y;
+
+					Debug.Log(buildingConstructed.X + " " +  buildingConstructed.Y);
+
 					buildingConstructed.gameObject.GetComponent<BoxCollider2D>().enabled = true;
 					buildingConstructed = null;
 				}
@@ -69,8 +72,8 @@ public class BuildingPlacement : MonoBehaviour {
 			else{
 				originalRender.color = Color.red;
 				buildingConstructed.transform.position = 
-					new Vector2(((grid.ConvertLocation(pos).x - 1)*grid.tileDiameter + grid.tileRadius),
-					            ((grid.ConvertLocation(pos).y - 1)*grid.tileDiameter + grid.tileRadius));
+					new Vector2(((grid.ConvertLocation(pos).x)*grid.getTileRadius() * 2+ grid.getTileRadius()),
+					            ((grid.ConvertLocation(pos).y)*grid.getTileRadius() * 2+ grid.getTileRadius()));
 			}
 
 			//buildingConstructed.location = pos;
@@ -91,11 +94,11 @@ public class BuildingPlacement : MonoBehaviour {
 		switch (buildingName) {
 		case "Barracks":
 
-				buildingConstructed = ((Barracks)Instantiate (g, transform.position,transform.rotation));
+			buildingConstructed = ((Barracks)Instantiate (g, transform.position,transform.rotation));
 			break;
 		case "Question":
 
-				buildingConstructed = ((QuestionBuilding)Instantiate (g, transform.position,transform.rotation));
+			buildingConstructed = ((QuestionBuilding)Instantiate (g, transform.position,transform.rotation));
 			break;
 		case "Archery":
 
