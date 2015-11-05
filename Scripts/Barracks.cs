@@ -15,6 +15,7 @@ public class Barracks :  Building {
 	public Cavalry cavalry;
 	Soldier soldier;
 	Grid grid;
+	SelectionManager selection;
 
 	// Use this for initialization
 	void Start () {
@@ -26,6 +27,8 @@ public class Barracks :  Building {
 		//Initialize the soldier queue
 		soldiers = new Queue ();
 		grid = GameObject.FindGameObjectWithTag ("Grid").GetComponent<Grid> ();
+		render = GetComponent<SpriteRenderer>();
+		selection = grid.GetComponent<SelectionManager> ();
 	}
 	
 	// Update is called once per frame
@@ -81,18 +84,27 @@ public class Barracks :  Building {
 		}
 	}
 
+
 	//This function works on the creation of soldiers depending on the current points of the
 	//user that is obtained from questions. It starts the creation of soldier by adding it to 
 	//queue while holding their number.
-
 	//A timer is used to show how much time left for soldier to be created.
-	public void createSoldier(bool isCavalary)
+	public void createInfantry()
 	{
 		//Add the soldier type to the queue to be summoned when timer finishes
 		//Reset the timer for update to summon the soldier
 		if (soldiers.Count == 0)
-			timer = (isCavalary) ? cavalryTime : infantryTime;
-		soldiers.Enqueue(isCavalary);
+			timer = infantryTime;
+		soldiers.Enqueue(false);
+	}
+
+	public void createCavalry()
+	{
+		//Add the soldier type to the queue to be summoned when timer finishes
+		//Reset the timer for update to summon the soldier
+		if (soldiers.Count == 0)
+			timer = cavalryTime;
+		soldiers.Enqueue(true);
 	}
 
 	//Increases the tier of the building which 
@@ -100,7 +112,7 @@ public class Barracks :  Building {
 	//	-Increases the health of the building (Restores it)
 	//	-Changes the sprite of the building for indication of level
 	#region implemented abstract members of Building
-	protected override void upgradeBuilding ()
+	public override void upgradeBuilding ()
 	{
 		//Increse tier
 		tier++;
@@ -114,12 +126,20 @@ public class Barracks :  Building {
 		
 		//According to tier, change the sprite of barracks
 		Sprite sprite = Resources.Load ("barracks" + tier,typeof(Sprite)) as Sprite;
-		
-		//Put the transparent template by changing the material
-		render = GetComponent<SpriteRenderer>();
+
 		render.sprite = sprite;
 	}
 	#endregion
 
+	//Clicked on this barracks, send the info about getting clicked to selection manager
+	void OnMouseDown()
+	{
+		render.color = Color.yellow;
+		selection.setSelected (this);
+	}
 
+	public override void Deselect()
+	{
+		render.color = Color.white;
+	}
 }

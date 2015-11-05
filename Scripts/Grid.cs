@@ -69,7 +69,7 @@ public class Grid : MonoBehaviour {
 		}
 
 	}
-
+	
 	//Find the position of tile in the grid form the vector coordinates
 	//Useful and be used for positioning for further game objects
 	public Vector2 ConvertLocation(Vector2 worldPosition)

@@ -4,7 +4,7 @@ using System.Collections;
 public class QuestionBuilding : Building {
 
 	#region implemented abstract members of Building
-	protected override void upgradeBuilding ()
+	public override void upgradeBuilding ()
 	{
 		throw new System.NotImplementedException ();
 	}
@@ -18,5 +18,9 @@ public class QuestionBuilding : Building {
 	// Update is called once per frame
 	void Update () {
 		
+	}
+	public override void Deselect()
+	{
+//		render.color = Color.white;
 	}
 }

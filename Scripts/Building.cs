@@ -37,5 +37,6 @@ public abstract class Building : MonoBehaviour {
 
 	//Health can be considered as a component which will be affected by attacks
 
-	protected abstract void upgradeBuilding();
+	public abstract void upgradeBuilding();
+	public abstract void Deselect();
 }

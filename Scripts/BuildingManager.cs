@@ -32,11 +32,5 @@ public class BuildingManager : MonoBehaviour {
 
 			}
 		}
-		if (GUI.Button (new Rect (250,250, 100, 40), "Create infantry"))
-			GameObject.FindGameObjectWithTag ("Building").GetComponent<Barracks>().createSoldier (false);
-		if (GUI.Button (new Rect (250,290, 100, 40), "Create Cavalry"))
-			GameObject.FindGameObjectWithTag ("Building").GetComponent<Barracks>().createSoldier (true);
-		if (GUI.Button (new Rect (250,330, 100, 40), "Create Archer"))
-			GameObject.FindGameObjectWithTag ("Building").GetComponent<Archery>().createSoldier();
 	}
 }

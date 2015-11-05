@@ -11,11 +11,13 @@ public class BuildingPlacement : MonoBehaviour {
 	Sprite original;
 	SpriteRenderer originalRender;
 	Grid grid; 
+	SelectionManager selection;
 
 	// When the script is loaded there is no building to be created so it is set to null
 	void Awake () {
 		grid = GetComponentInParent<Grid>();
 		buildingConstructed = null;
+		selection = GetComponentInParent<SelectionManager>();
 	}
 
 	//TODO
@@ -91,6 +93,9 @@ public class BuildingPlacement : MonoBehaviour {
 	//Puts the building to be created to the building property of the building placement class
 	public void CreateBuilding(Building g,string buildingName)
 	{
+
+		//Cancel the selection of building
+		selection.cancel();
 		switch (buildingName) {
 		case "Barracks":
 

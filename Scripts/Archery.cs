@@ -13,6 +13,7 @@ public class Archery : Building {
 	public Archer archer;
 	Soldier soldier;
 	Grid grid;
+	SelectionManager selection;
 	
 	// Use this for initialization
 	void Start () {
@@ -23,6 +24,8 @@ public class Archery : Building {
 		//Initialize the soldier queue
 		soldiers = new Queue ();
 		grid = GameObject.FindGameObjectWithTag ("Grid").GetComponent<Grid> ();
+		render = GetComponent<SpriteRenderer>();
+		selection = grid.GetComponent<SelectionManager> ();
 	}
 	
 	// Update is called once per frame
@@ -90,7 +93,7 @@ public class Archery : Building {
 	//	-Increases the health of the building (Restores it)
 	//	-Changes the sprite of the building for indication of level
 	#region implemented abstract members of Building
-	protected override void upgradeBuilding ()
+	public override void upgradeBuilding ()
 	{
 		//Increse tier
 		tier++;
@@ -103,12 +106,22 @@ public class Archery : Building {
 		
 		//According to tier, change the sprite of barracks
 		Sprite sprite = Resources.Load ("archery" + tier,typeof(Sprite)) as Sprite;
-		
-		//Put the transparent template by changing the material
-		render = GetComponent<SpriteRenderer>();
+
+
 		render.sprite = sprite;
 	}
 	#endregion
+
+	//Clicked on this barracks, send the info about getting clicked to selection manager
+	void OnMouseDown()
+	{
+		render.color = Color.yellow;
+		selection.setSelected (this);
+	}
 	
+	public override void Deselect()
+	{
+		render.color = Color.white;
+	}
 
 }
