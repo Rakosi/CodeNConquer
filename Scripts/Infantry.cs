@@ -3,18 +3,14 @@ using System.Collections;
 
 public class Infantry : Soldier {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+	void Start()
+	{
+		range = 15f;
 	}
 
-	protected override void Attack()
+	protected override void Attack(GameObject target)
 	{
-		
+		Debug.LogError("DIE");
 	}
+	
 }

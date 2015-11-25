@@ -3,17 +3,14 @@ using System.Collections;
 
 public class Archer : Soldier {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-	protected override void Attack()
+	void Start()
 	{
-		
+		range = 100f;
 	}
+
+	protected override void Attack(GameObject target)
+	{
+		Debug.LogError("DIE");
+	}
+
 }

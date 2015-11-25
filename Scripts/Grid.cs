@@ -54,6 +54,8 @@ public class Grid : MonoBehaviour {
 //				}
 //				else
 //					isObstacle = false;
+
+
 				//Check if there are any obstacles on the tile currently
 				//Update: I have added a very small amount of distance to shrink the area to be checked, as
 				//it can falsely think there is an obstacle on it while actually its neighbour has it.
@@ -62,9 +64,7 @@ public class Grid : MonoBehaviour {
 				                                         new Vector2(worldPoint.x + tileRadius - 0.01f,worldPoint.y - tileRadius + 0.01f),
 				                                    1 << LayerMask.NameToLayer("obstacle"));
 				
-				grid[x,y] = new Tile(isObstacle,worldPoint);
-				if(isObstacle)
-					Debug.Log(x + " " + y);
+				grid[x,y] = new Tile(isObstacle,worldPoint,x,y);
 			}
 		}
 
@@ -82,6 +82,17 @@ public class Grid : MonoBehaviour {
 		return new Vector2 (x-1, y-1);
 	}
 
+	public Tile ConvertToTile(Vector2 worldPos)
+	{
+		float percentX = (worldPos.x + tileRadius) / gridWorldSize.x;
+		float percentY = (worldPos.y + tileRadius) / gridWorldSize.y;
+		
+		int x = Mathf.RoundToInt((gridSizeX) * percentX);
+		int y = Mathf.RoundToInt((gridSizeY) * percentY);
+		return grid [x-1, y-1];
+
+	}
+
 	//Constantly updates the whole grid each frame so building construction A* works as accurate as possible
 	//As the game scene is constant, it is not a performance problem 
 	void FixedUpdate()
@@ -95,9 +106,9 @@ public class Grid : MonoBehaviour {
 			t.IsObstacle = Physics2D.OverlapArea (new Vector2(t.WorldPosition.x - tileRadius + 0.01f,t.WorldPosition.y + tileRadius - 0.01f),
 			                                      new Vector2(t.WorldPosition.x + tileRadius - 0.01f,t.WorldPosition.y - tileRadius + 0.01f),
 			                                      1 << LayerMask.NameToLayer("obstacle"));
-		//	if(t.IsObstacle)
-		//		Debug.Log(t.WorldPosition);
+
 		}
+
 	}
 
 	//Checks all the close tiles if they are occupied, buildings take 5x5 even if they are 3x3
@@ -107,8 +118,7 @@ public class Grid : MonoBehaviour {
 		Vector2 pos2 = ConvertLocation(pos);
 		int x = Mathf.RoundToInt (pos2.x);
 		int y = Mathf.RoundToInt (pos2.y);
-		
-		//Debug.Log(x + " " + y);
+
 		if (x < 2 || x > gridSizeX - 3 || y < 2 || y > gridSizeY - 3)
 			return true;
 		else {
@@ -129,6 +139,41 @@ public class Grid : MonoBehaviour {
 	{
 		return grid[x,y].IsObstacle;
 	}
+
+	//Return the neighbours of tile
+	public ArrayList getNeighbours (int x,int y)
+	{
+		ArrayList neighbours = new ArrayList ();
+		for(int r = x - 1;r <= x + 1;r++){
+			for(int c = y - 1;c <= y + 1;c++)
+			{
+
+				//If not the node we are checking
+				if(!(r == x && c == y))
+				{
+
+					if (r >= 0 && r < gridSizeX && c >= 0 && c < gridSizeY){
+						//Dont give neighbours that are accessed by diagonal movement but has obstacle in the corner between
+						if((r != x && c != y) && (grid[r,y].IsObstacle || grid[x,c].IsObstacle)){
+							continue;}
+						neighbours.Add(grid[r,c]);
+	
+					}
+
+				}
+			}
+		}
+
+		return neighbours;
+	}
+
+	//Return the distance between tiles, diagonal movement is not allowed 
+	public int tileDistance(Tile tile1, Tile tile2)
+	{
+		return Mathf.Abs (tile1.Y - tile2.Y) + Mathf.Abs (tile1.X - tile2.X);
+	}
+
+
 //	Gizmos debugging part
 //	void OnDrawGizmos()
 //	{

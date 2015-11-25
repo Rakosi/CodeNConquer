@@ -25,10 +25,62 @@ public class Tile {
 			worldPosition = value;
 		}
 	}
+
+	//These are used for A* algorithm
+	//The cost of coming this tile from starting tile
+	private int gCost;
+	public int GCost {
+		get {
+			return gCost;
+		}
+		set {
+			gCost = value;
+		}
+	}
+	//The cost of going to target tile from this tile
+
+	private int hCost;
+	public int HCost {
+		get {
+			return hCost;
+		}
+		set {
+			hCost = value;
+		}
+	}
+
+	private int x;
+	public int X {
+		get {
+			return x;
+		}
+
+	}
+
+ 	private int y;
+	public int Y {
+		get {
+			return y;
+		}
+		
+	}
+
+
 	
-	public Tile(bool isObstacle,Vector2 worldPosition){
+	public Tile(bool isObstacle,Vector2 worldPosition,int X,int Y){
 		this.isObstacle = isObstacle;
 		this.worldPosition = worldPosition;
+		gCost = int.MaxValue;
+		hCost = int.MaxValue;
+		x = X;
+		y = Y;
 	}
-	
+
+	private int fCost;
+
+	public int FCost {
+		get {
+			return gCost + hCost;
+		}
+	}
 }

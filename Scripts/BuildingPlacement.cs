@@ -95,7 +95,7 @@ public class BuildingPlacement : MonoBehaviour {
 	{
 
 		//Cancel the selection of building
-		selection.cancel();
+		selection.cancel(true);
 		switch (buildingName) {
 		case "Barracks":
 
