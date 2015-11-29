@@ -4,7 +4,26 @@ using System.Collections;
 public abstract class Building : MonoBehaviour {
 
 	protected int tier;
-	public Vector2 location;
+	//Variables holding the location indices in grid
+	private int x;
+	private int y;
+	public int X {
+		get {
+			return x;
+		}
+		set {
+			x = value;
+		}
+	}
+
+	public int Y {
+		get {
+			return y;
+		}
+		set {
+			y = value;
+		}
+	}
 
 	public int Tier {
 		get {
@@ -16,11 +35,7 @@ public abstract class Building : MonoBehaviour {
 		}
 	}
 
-	//Health can be considered as a component which will be affected by attacks
 
-	void Start()
-	{
-
-	}
-	protected abstract void upgradeBuilding();
+	public abstract void upgradeBuilding();
+	public abstract void Deselect();
 }
